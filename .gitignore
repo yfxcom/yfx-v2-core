@@ -1,0 +1,16 @@
+node_modules/
+.vscode
+.idea
+test/*.js
+artifacts
+cache
+typechain
+.DS_Store
+.openzeppelin/.session
+abi
+*.swp
+package-lock.json
+build
+.openzeppelin/
+yarn-error.log
+tsconfig.json
