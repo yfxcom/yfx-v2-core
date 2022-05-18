@@ -220,11 +220,18 @@ contract MarketCalc {
         iParams.feeRate = IMarket(params.position.market).feeRate();
         iParams.feeDecimal = IMarket(params.position.market).feeDecimal();
         iParams.feeMakerPercent = IMarket(params.position.market).feeMakerPercent();
-        if (iParams.marketType == 2) {
-            response.takerFee = params.position.value.mul(params.position.clearAnchorRatio).div(10 ** clearAnchorRatioDecimals).mul(iParams.feeRate).div(iParams.feeDecimal);
+        
+        uint256 closeValue;
+        if (iParams.marketType == 0 || iParams.marketType == 2) {
+            closeValue = params.position.amount.mul(params.price).mul(10 ** iParams.clearAnchorDecimals).div(10 ** amountDecimals).div(10 ** priceDecimals);
+            if (iParams.marketType == 2) {
+                closeValue = closeValue.mul(params.position.clearAnchorRatio).div(10 ** clearAnchorRatioDecimals);
+            }
         } else {
-            response.takerFee = params.position.value.mul(iParams.feeRate).div(iParams.feeDecimal);
+            closeValue = params.position.amount.mul(10 ** iParams.clearAnchorDecimals).mul(10 ** priceDecimals).div(params.price).div(10 ** amountDecimals);
         }
+
+        response.takerFee = closeValue.mul(iParams.feeRate).div(iParams.feeDecimal);
         response.feeToMaker = response.takerFee.mul(iParams.feeMakerPercent).div(iParams.feeDecimal);
         response.feeToExchange = response.takerFee.sub(response.feeToMaker);
 
