@@ -14,8 +14,8 @@ import "./library/ReentrancyGuard.sol";
 contract User is ReentrancyGuard {
     using SafeMath for uint256;
 
-    address public wCoin;
-    address public manager;
+    address public immutable wCoin;
+    address public immutable manager;
     mapping(address => bool) public tokenList;
     mapping(address => uint256) public totalSupply;
     mapping(address => mapping(address => uint256)) public balance;
@@ -25,6 +25,7 @@ contract User is ReentrancyGuard {
     event Deposit(address token, address user, uint256 value);
     event Withdraw(address token, address user, uint256 value);
     event AddToken(address token);
+    event Receive(address caller);
 
     constructor(address _m, address _wCoin) public {
         require(_m != address(0), "invalid manager");
@@ -34,6 +35,7 @@ contract User is ReentrancyGuard {
     }
 
     receive() external payable {
+        emit Receive(msg.sender);
         require(msg.sender == wCoin, "invalid recharge method, please use deposit function");
     }
 
@@ -109,7 +111,7 @@ contract User is ReentrancyGuard {
 
         if (coinType == 0) {
             require(token == address(0), "token address must be address 0!");
-            require(balance[wCoin][msg.sender] >= value);
+            require(balance[wCoin][msg.sender] >= value, "withdraw insufficient balance");
 
             totalSupply[wCoin] = totalSupply[wCoin].sub(value);
             balance[wCoin][msg.sender] = balance[wCoin][msg.sender].sub(value);

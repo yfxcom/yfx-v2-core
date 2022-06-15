@@ -36,15 +36,29 @@ contract Manager {
     event MarketCreated(address market, address maker, uint256 price, address clearAnchor, uint8 marketType);
     event SignerAdd(address signer);
     event SignerRemove(address signer);
+    event Pause(bool paused);
+    event Unpause(bool paused);
+    event ChangeOwner(address owner);
+    event NotifyRouter(address _router);
+    event NotifyTaker(address _taker);
+    event NotifyController(address _controller);
+    event NotifyFeeOwner(address _feeOwner);
+    event NotifyRiskFundingOwner(address _riskFundingOwner);
+    event NotifyPoolFeeOwner(address _poolFeeOwner);
+    event ChangeCancelBlockElapse(uint256 _cancelBlockElapse);
+    event ChangeOpenLongBlockElapse(uint256 _openLongBlockElapse);
+    event SetLimitConfig(address _market, Types.LimitConfig _config);
 
     function pause() external onlyController {
         require(!paused, "already paused");
         paused = true;
+        emit Pause(paused);
     }
 
     function unpause() external onlyController {
         require(paused, "not paused");
         paused = false;
+        emit Unpause(paused);
     }
 
     constructor(address _owner) public {
@@ -56,18 +70,21 @@ contract Manager {
     function changeOwner(address _owner) external onlyOwner {
         require(_owner != address(0), "address zero");
         owner = _owner;
+        emit ChangeOwner(_owner);
     }
 
     function notifyRouter(address _router) external onlyController {
         require(router == address(0), "router already notify");
         require(_router != address(0), "address zero");
         router = _router;
+        emit NotifyRouter(_router);
     }
 
     function notifyTaker(address _taker) external onlyController {
         require(taker == address(0), "taker already notify");
         require(_taker != address(0), "address zero");
         taker = _taker;
+        emit NotifyTaker(_taker);
     }
 
     function notifySigner(address _signer) external onlyController {
@@ -86,31 +103,37 @@ contract Manager {
         require(_controller != address(0), "address zero");
         require(msg.sender == owner || msg.sender == controller, "only controller");
         controller = _controller;
+        emit NotifyController(_controller);
     }
 
     function notifyFeeOwner(address _feeOwner) external onlyController {
         require(_feeOwner != address(0), "address zero");
         feeOwner = _feeOwner;
+        emit NotifyFeeOwner(_feeOwner);
     }
 
     function notifyRiskFundingOwner(address _riskFundingOwner) external onlyController {
         require(_riskFundingOwner != address(0), "address zero");
         riskFundingOwner = _riskFundingOwner;
+        emit NotifyRiskFundingOwner(_riskFundingOwner);
     }
 
     function notifyPoolFeeOwner(address _poolFeeOwner) external onlyController {
         require(_poolFeeOwner != address(0), "address zero");
         poolFeeOwner = _poolFeeOwner;
+        emit NotifyPoolFeeOwner(_poolFeeOwner);
     }
 
     function changeCancelBlockElapse(uint256 _cancelBlockElapse) external onlyController {
         require(_cancelBlockElapse > 0, "_cancelBlockElapse zero");
         cancelBlockElapse = _cancelBlockElapse;
+        emit ChangeCancelBlockElapse(_cancelBlockElapse);
     }
 
     function changeOpenLongBlockElapse(uint256 _openLongBlockElapse) external onlyController {
         require(_openLongBlockElapse > 0, "_openLongBlockElapse zero");
         openLongBlockElapse = _openLongBlockElapse;
+        emit ChangeOpenLongBlockElapse(_openLongBlockElapse);
     }
 
     function setLimitConfig(address market, Types.LimitConfig memory _config) external onlyController {
@@ -119,6 +142,7 @@ contract Manager {
         require(_config.takerMarginMin > 0 && _config.takerMarginMin < _config.takerMarginMax, "margin not right");
         require(_config.takerValueMin > 0 && _config.takerValueMin < _config.takerValueMax, "value not right");
         limitConfig[market] = _config;
+        emit SetLimitConfig(market, _config);
     }
 
     function checkSigner(address _signer) external view returns (bool) {

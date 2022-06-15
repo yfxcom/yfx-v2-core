@@ -10,7 +10,7 @@ import "./interface/IMarketCalc.sol";
 
 contract Router {
     address manager;
-    IMarketCalc calc;
+    IMarketCalc immutable calc;
 
     event TakerOpen(address market, uint256 id);
     event Open(address market, uint256 id, uint256 orderid);

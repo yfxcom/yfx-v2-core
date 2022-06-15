@@ -36,7 +36,7 @@ contract Market is ReentrancyGuard {
 
     address internal taker;
     address internal maker;
-    address internal manager;
+    address internal immutable manager;
     IMarketCalc internal calc;
 
     uint256 internal indexPriceID;
@@ -65,6 +65,10 @@ contract Market is ReentrancyGuard {
     bool internal openPaused = false;
     bool internal setPricePaused = false;
     bool internal openTriggerPaused = false;
+
+    event SetPaused(bool _open, bool _set, bool _openTrigger);
+    event Initialize(uint256 _indexPrice, address _clearAnchor, uint256 _clearAnchorRatio, address _maker, uint8 _marketType);
+    event SetConfigParams(uint256 _feeRate, uint256 _feeInvitorPercent, uint256 _feeExchangePercent, uint256 _feeMakerPercent,uint256 _ratio, uint256 limit, address _calc, uint256 _mm, uint256 rate);
 
     constructor(address _manager, address _calc) public {
         manager = _manager;
@@ -95,6 +99,7 @@ contract Market is ReentrancyGuard {
         openPaused = _open;
         setPricePaused = _set;
         openTriggerPaused = _openTrigger;
+        emit SetPaused(_open, _set, _openTrigger);
     }
 
     function initialize(uint256 _indexPrice, address _clearAnchor, uint256 _clearAnchorRatio, address _maker, uint8 _marketType) external {
@@ -106,23 +111,19 @@ contract Market is ReentrancyGuard {
         taker = IManager(manager).taker();
         marketType = _marketType;
         clearAnchorDecimals = IERC20(clearAnchor).decimals();
+        emit Initialize(_indexPrice, _clearAnchor, _clearAnchorRatio, _maker, _marketType);
     }
 
-    function setClearAnchorRatio(uint256 _ratio) external onlyController {
-        require(marketType == 2 && _ratio > 0, "error");
-        clearAnchorRatio = _ratio;
-    }
-
-    function setTakerValueLimit(uint256 limit) external onlyController {
-        require(limit > 0, "limit not be zero");
-        takerValueLimit = limit;
-    }
-
-    function setFee(
+    function setConfigParams(
         uint256 _feeRate,
         uint256 _feeInvitorPercent,
         uint256 _feeExchangePercent,
-        uint256 _feeMakerPercent
+        uint256 _feeMakerPercent,
+        uint256 _ratio,
+        uint256 limit,
+        address _calc,
+        uint256 _mm,
+        uint256 rate
     ) external onlyController {
         require(_feeInvitorPercent.add(_feeMakerPercent).add(_feeExchangePercent) == feeDecimal, "percent all not one");
         require(_feeRate < feeDecimal, "feeRate more than one");
@@ -130,21 +131,13 @@ contract Market is ReentrancyGuard {
         feeInvitorPercent = _feeInvitorPercent;
         feeExchangePercent = _feeExchangePercent;
         feeMakerPercent = _feeMakerPercent;
-    }
-
-    function setCalc(address _calc) external onlyController {
-        require(_calc != address(0), "error");
+        require(marketType == 2 && _ratio > 0 && limit > 0 && _calc != address(0) && (_mm > 0 && _mm < mmDecimal) && rate > 0, "params error");
+        clearAnchorRatio = _ratio;
+        takerValueLimit = limit;
         calc = IMarketCalc(_calc);
-    }
-
-    function setMM(uint256 _mm) external onlyController {
-        require(_mm > 0 && _mm < mmDecimal, "mm is not right");
         mm = _mm;
-    }
-
-    function setMakerLeverageRate(uint256 rate) external onlyController {
-        require(rate > 0, "value is not right");
         makerLeverageRate = rate;
+        emit SetConfigParams(_feeRate, _feeInvitorPercent, _feeExchangePercent, _feeMakerPercent, _ratio, limit, _calc, _mm, rate);
     }
 
     function getPositionId(address _taker) external view returns (uint256){
