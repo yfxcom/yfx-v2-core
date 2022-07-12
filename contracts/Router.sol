@@ -79,7 +79,7 @@ contract Router {
 
     /// @notice user place an open-position order, long or short
     /// @param params see the struct declaration
-    /// @return the order id
+    /// @return id
     function takerOpen(TakerOpenParams memory params) external ensure(params.deadline) onlyMakerOrMarket(params._market) returns (uint256 id) {
         require(params.minPrice <= params.maxPrice, "Router: error price for taker open");
         id = IMarket(params._market).open(Types.OpenInternalParams({
@@ -102,7 +102,7 @@ contract Router {
 
     /// @notice user place a close-position order
     /// @param params see the struct declaration
-    /// @return order id
+    /// @return id
     function takerClose(TakerCloseParams memory params) external ensure(params.deadline) onlyMakerOrMarket(params._market) returns (uint256 id) {
         require(params.minPrice <= params.maxPrice, "Router: error price for taker close");
         id = IMarket(params._market).open(Types.OpenInternalParams({
@@ -175,7 +175,7 @@ contract Router {
         emit ChangeStatus(_market, id);
     }
 
-    /// @notcie centralized oracle liquidate/stop-loss/take-profit positions that should be ended
+    /// @notice centralized oracle liquidate/stop-loss/take-profit positions that should be ended
     /// @param _market  market contract address
     /// @param id   position id
     /// @param price    price for the liquidation order

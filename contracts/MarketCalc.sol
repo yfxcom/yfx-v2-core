@@ -314,7 +314,6 @@ contract MarketCalc {
             (iParams.longAmount, iParams.shortAmount) = IMaker(params.maker).getAmount();
             if (iParams.longAmount.add(iParams.shortAmount) != 0) {
                 iParams.dealtFundingRate = (iParams.longAmount.toInt256().sub(iParams.shortAmount.toInt256()) ** 3).mul(iParams.config.fundingRateMax).div(iParams.longAmount.toInt256().add(iParams.shortAmount.toInt256()) ** 3);
-                iParams.config.fundingRateMax = iParams.config.fundingRateMax;
                 if (iParams.dealtFundingRate > iParams.config.fundingRateMax) iParams.dealtFundingRate = iParams.config.fundingRateMax;
                 if (iParams.dealtFundingRate < - iParams.config.fundingRateMax) iParams.dealtFundingRate = - iParams.config.fundingRateMax;
                 iParams.dealtFundingRate = iParams.dealtFundingRate.mul(Q96).div(1e7).div(FUNDING_FEE_RATIO);

@@ -131,8 +131,9 @@ contract Market is ReentrancyGuard {
         feeInvitorPercent = _feeInvitorPercent;
         feeExchangePercent = _feeExchangePercent;
         feeMakerPercent = _feeMakerPercent;
-        require(marketType == 2 && _ratio > 0 && limit > 0 && _calc != address(0) && (_mm > 0 && _mm < mmDecimal) && rate > 0, "params error");
+        require(marketType == 2 ? _ratio > 0 : true, "ratio error");
         clearAnchorRatio = _ratio;
+        require(limit > 0 && _calc != address(0) && (_mm > 0 && _mm < mmDecimal) && rate > 0, "params error");
         takerValueLimit = limit;
         calc = IMarketCalc(_calc);
         mm = _mm;
